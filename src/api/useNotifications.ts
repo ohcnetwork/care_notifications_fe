@@ -1,0 +1,70 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { mutate, query } from "@/lib/request";
+
+import { NotificationFilters } from "@/types/notification";
+
+import notificationRoutes from "./routes";
+
+export const NOTIFICATIONS_QUERY_KEY = "in_app_notifications";
+
+function getPollInterval(): number {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const meta = (window as any).__CARE_PLUGIN_RUNTIME__?.meta?.[
+    "care_notifications_fe"
+  ];
+  return (
+    Number(meta?.config?.NOTIFICATION_POLL_INTERVAL_IN_SEC) * 1000 || 30_000
+  );
+}
+
+export function useNotifications(filters: NotificationFilters = {}) {
+  const queryParams: Record<string, string | number | boolean | undefined> = {
+    ordering: filters.ordering ?? "-created_date",
+  };
+
+  if (filters.event_type) queryParams.event_type = filters.event_type;
+  if (filters.resource_type) queryParams.resource_type = filters.resource_type;
+  if (filters.resource_id) queryParams.resource_id = filters.resource_id;
+  if (filters.facility) queryParams.facility = filters.facility;
+  if (filters.unread !== undefined) queryParams.unread = filters.unread;
+  if (filters.limit) queryParams.limit = filters.limit;
+  if (filters.offset) queryParams.offset = filters.offset;
+
+  return useQuery({
+    queryKey: [NOTIFICATIONS_QUERY_KEY, queryParams],
+    queryFn: query(notificationRoutes.listNotifications, { queryParams }),
+    refetchInterval: getPollInterval(),
+  });
+}
+
+export function useUnreadCount() {
+  return useQuery({
+    queryKey: [NOTIFICATIONS_QUERY_KEY, "unread_count"],
+    queryFn: query(notificationRoutes.listNotifications, {
+      queryParams: { unread: true, limit: 1 },
+    }),
+    refetchInterval: getPollInterval(),
+    select: (data: { count: number }) => data.count,
+  });
+}
+
+export function useMarkRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: mutate(notificationRoutes.markRead),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY_KEY] });
+    },
+  });
+}
+
+export function useMarkUnread() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: mutate(notificationRoutes.markUnread),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY_KEY] });
+    },
+  });
+}

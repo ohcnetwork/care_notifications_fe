@@ -1,0 +1,23 @@
+{
+  "all": "All",
+  "all_caught_up": "You're all caught up!",
+  "all_events": "All Events",
+  "all_resources": "All Resources",
+  "booking_cancellation": "Booking Cancelled",
+  "booking_confirmation": "Booking Confirmed",
+  "booking_reminder": "Booking Reminder",
+  "booking_reschedule": "Booking Rescheduled",
+  "clear_filters": "Clear filters",
+  "diagnostic_report_ready": "Diagnostic Report Ready",
+  "encounter_ip_created": "IP Encounter Created",
+  "filters": "Filters",
+  "mark_all_read": "Mark all read",
+  "mark_read": "Mark read",
+  "mark_unread": "Mark unread",
+  "medication_stock_low": "Low Stock",
+  "medication_stock_near_expiry": "Near Expiry",
+  "no_notifications": "No notifications",
+  "notifications": "Notifications",
+  "service_request_raised": "Service Request Raised",
+  "unread": "Unread"
+}
