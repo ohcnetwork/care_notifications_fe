@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 import {
   PushPermissionState,
   getCurrentPushSubscription,
@@ -17,6 +19,7 @@ import {
 } from "@/api/useWebPush";
 
 export function WebPushSettings() {
+  const { t } = useTranslation();
   const [permissionState, setPermissionState] = useState<PushPermissionState>(
     getPushPermissionState,
   );
@@ -81,10 +84,10 @@ export function WebPushSettings() {
           <MonitorSmartphone className="size-5 text-gray-400" />
           <div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Push Notifications
+              {t("push_notifications")}
             </p>
             <p className="text-xs text-gray-500">
-              Not supported in this browser.
+              {t("not_supported_in_browser")}
             </p>
           </div>
         </div>
@@ -115,14 +118,14 @@ export function WebPushSettings() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              Push Notifications
+              {t("push_notifications")}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               {isSubscribed
-                ? "Receiving push notifications on this device"
+                ? t("receiving_push_on_device")
                 : permissionState === "denied"
-                  ? "Blocked by browser — allow in site settings"
-                  : "Get notified even when Care is not open"}
+                  ? t("blocked_by_browser")
+                  : t("get_notified_when_care_not_open")}
             </p>
           </div>
         </div>
@@ -135,7 +138,7 @@ export function WebPushSettings() {
             onClick={isSubscribed ? handleDisable : handleEnable}
           >
             {isToggling && <Loader2 className="mr-1 size-3 animate-spin" />}
-            {isSubscribed ? "Disable" : "Enable"}
+            {isSubscribed ? t("disable") : t("enable")}
           </Button>
         )}
       </div>
@@ -143,7 +146,7 @@ export function WebPushSettings() {
       {subscriptions && subscriptions.results.length > 0 && (
         <div className="mt-3 border-t border-gray-100 pt-3 dark:border-gray-800">
           <p className="mb-1 text-xs font-medium text-gray-500">
-            Active devices: {subscriptions.results.length}
+            {t("active_devices", { count: subscriptions.results.length })}
           </p>
         </div>
       )}
