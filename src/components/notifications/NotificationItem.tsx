@@ -14,6 +14,8 @@ import { formatDistanceToNow } from "@/lib/dateUtils";
 import { notificationPath } from "@/lib/notificationPath";
 import { cn } from "@/lib/utils";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 import {
   EventType,
   InAppNotification,
@@ -57,11 +59,11 @@ export function getNotificationIcon(notification: InAppNotification) {
 
 export function getResourceLabel(resourceType: string) {
   const labels: Record<string, string> = {
-    [ResourceType.SERVICE_REQUEST]: "Service Request",
-    [ResourceType.DIAGNOSTIC_REPORT]: "Diagnostic Report",
-    [ResourceType.ENCOUNTER]: "Encounter",
-    [ResourceType.MEDICATION_STOCK]: "Medication Stock",
-    [ResourceType.BOOKING]: "Booking",
+    [ResourceType.SERVICE_REQUEST]: "service_request",
+    [ResourceType.DIAGNOSTIC_REPORT]: "diagnostic_report",
+    [ResourceType.ENCOUNTER]: "encounter",
+    [ResourceType.MEDICATION_STOCK]: "medication_stock",
+    [ResourceType.BOOKING]: "booking",
   };
   return labels[resourceType] ?? resourceType;
 }
@@ -77,6 +79,7 @@ export function NotificationItem({
   onMarkRead,
   onMarkUnread,
 }: NotificationItemProps) {
+  const { t } = useTranslation();
   const isUnread = !notification.read_at;
   const deepLink = notificationPath(notification);
 
@@ -126,7 +129,7 @@ export function NotificationItem({
           </span>
           <span className="text-xs text-gray-300 dark:text-gray-600">•</span>
           <span className="text-xs text-gray-400">
-            {getResourceLabel(notification.resource_type)}
+            {t(getResourceLabel(notification.resource_type))}
           </span>
         </div>
       </div>
@@ -140,9 +143,9 @@ export function NotificationItem({
           }
         }}
         className="shrink-0 rounded p-1 text-xs text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
-        title={isUnread ? "Mark as read" : "Mark as unread"}
+        title={isUnread ? t("mark_as_read") : t("mark_as_unread")}
       >
-        {isUnread ? "Mark read" : "Mark unread"}
+        {isUnread ? t("mark_read") : t("mark_unread")}
       </button>
     </div>
   );

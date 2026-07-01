@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 import {
   useMarkRead,
   useMarkUnread,
@@ -18,35 +20,42 @@ import {
 } from "@/api/useNotifications";
 import { EventType, ResourceType } from "@/types/notification";
 
-const EVENT_TYPE_OPTIONS = [
-  { value: "", label: "All Events" },
-  { value: EventType.SERVICE_REQUEST_RAISED, label: "Service Request Raised" },
-  {
-    value: EventType.DIAGNOSTIC_REPORT_READY,
-    label: "Diagnostic Report Ready",
-  },
-  { value: EventType.ENCOUNTER_IP_CREATED, label: "IP Encounter Created" },
-  { value: EventType.MEDICATION_STOCK_LOW, label: "Low Stock" },
-  { value: EventType.MEDICATION_STOCK_NEAR_EXPIRY, label: "Near Expiry" },
-  { value: EventType.BOOKING_CONFIRMATION, label: "Booking Confirmed" },
-  { value: EventType.BOOKING_CANCELLATION, label: "Booking Cancelled" },
-  { value: EventType.BOOKING_RESCHEDULE, label: "Booking Rescheduled" },
-];
-
-const RESOURCE_TYPE_OPTIONS = [
-  { value: "", label: "All Resources" },
-  { value: ResourceType.SERVICE_REQUEST, label: "Service Request" },
-  { value: ResourceType.DIAGNOSTIC_REPORT, label: "Diagnostic Report" },
-  { value: ResourceType.ENCOUNTER, label: "Encounter" },
-  { value: ResourceType.MEDICATION_STOCK, label: "Medication Stock" },
-  { value: ResourceType.BOOKING, label: "Booking" },
-];
-
 export default function NotificationsPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<"all" | "unread" | "read">("unread");
   const [eventType, setEventType] = useState("");
   const [resourceType, setResourceType] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  const EVENT_TYPE_OPTIONS = [
+    { value: "", label: t("all_events") },
+    {
+      value: EventType.SERVICE_REQUEST_RAISED,
+      label: t("service_request_raised"),
+    },
+    {
+      value: EventType.DIAGNOSTIC_REPORT_READY,
+      label: t("diagnostic_report_ready"),
+    },
+    { value: EventType.ENCOUNTER_IP_CREATED, label: t("encounter_ip_created") },
+    { value: EventType.MEDICATION_STOCK_LOW, label: t("medication_stock_low") },
+    {
+      value: EventType.MEDICATION_STOCK_NEAR_EXPIRY,
+      label: t("medication_stock_near_expiry"),
+    },
+    { value: EventType.BOOKING_CONFIRMATION, label: t("booking_confirmation") },
+    { value: EventType.BOOKING_CANCELLATION, label: t("booking_cancellation") },
+    { value: EventType.BOOKING_RESCHEDULE, label: t("booking_reschedule") },
+  ];
+
+  const RESOURCE_TYPE_OPTIONS = [
+    { value: "", label: t("all_resources") },
+    { value: ResourceType.SERVICE_REQUEST, label: t("service_request") },
+    { value: ResourceType.DIAGNOSTIC_REPORT, label: t("diagnostic_report") },
+    { value: ResourceType.ENCOUNTER, label: t("encounter") },
+    { value: ResourceType.MEDICATION_STOCK, label: t("medication_stock") },
+    { value: ResourceType.BOOKING, label: t("booking") },
+  ];
 
   // Extract facilityId from URL: /facility/:facilityId/notifications
   const path = usePath();
@@ -81,11 +90,11 @@ export default function NotificationsPage() {
         <div className="flex items-center gap-3">
           <Bell className="size-6 text-gray-700 dark:text-gray-300" />
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Notifications
+            {t("notifications")}
           </h1>
           {unreadCount > 0 && (
             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-              {unreadCount} unread
+              {t("unread_count", { count: unreadCount })}
             </span>
           )}
         </div>
@@ -96,12 +105,12 @@ export default function NotificationsPage() {
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-1 size-4" />
-            Filters
+            {t("filters")}
           </Button>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
               <CheckCheck className="mr-1 size-4" />
-              Mark all read
+              {t("mark_all_read")}
             </Button>
           )}
         </div>
@@ -111,7 +120,7 @@ export default function NotificationsPage() {
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
           <Select.Root value={eventType} onValueChange={setEventType}>
             <Select.Trigger className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-800">
-              <Select.Value placeholder="All Events" />
+              <Select.Value placeholder={t("all_events")} />
             </Select.Trigger>
             <Select.Portal>
               <Select.Content className="z-50 rounded-md border bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
@@ -132,7 +141,7 @@ export default function NotificationsPage() {
 
           <Select.Root value={resourceType} onValueChange={setResourceType}>
             <Select.Trigger className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-800">
-              <Select.Value placeholder="All Resources" />
+              <Select.Value placeholder={t("all_resources")} />
             </Select.Trigger>
             <Select.Portal>
               <Select.Content className="z-50 rounded-md border bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
@@ -159,7 +168,7 @@ export default function NotificationsPage() {
               }}
               className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             >
-              Clear filters
+              {t("clear_filters")}
             </button>
           )}
         </div>
@@ -179,7 +188,7 @@ export default function NotificationsPage() {
                 : "text-gray-500 hover:text-gray-700",
             )}
           >
-            All
+            {t("all")}
           </Tabs.Trigger>
           <Tabs.Trigger
             value="unread"
@@ -190,7 +199,7 @@ export default function NotificationsPage() {
                 : "text-gray-500 hover:text-gray-700",
             )}
           >
-            Unread {unreadCount > 0 && `(${unreadCount})`}
+            {t("unread")} {unreadCount > 0 && `(${unreadCount})`}
           </Tabs.Trigger>
           <Tabs.Trigger
             value="read"
@@ -201,7 +210,7 @@ export default function NotificationsPage() {
                 : "text-gray-500 hover:text-gray-700",
             )}
           >
-            Read
+            {t("read")}
           </Tabs.Trigger>
         </Tabs.List>
 
@@ -215,8 +224,8 @@ export default function NotificationsPage() {
               <Bell className="mb-3 size-12 text-gray-200 dark:text-gray-700" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {tab === "unread"
-                  ? "You're all caught up!"
-                  : "No notifications yet"}
+                  ? t("all_caught_up")
+                  : t("no_notifications_yet")}
               </p>
             </div>
           ) : (
@@ -233,7 +242,10 @@ export default function NotificationsPage() {
 
         {data && data.count > notifications.length && (
           <p className="mt-3 text-center text-xs text-gray-400">
-            Showing {notifications.length} of {data.count} notifications
+            {t("showing_count", {
+              count: notifications.length,
+              total: data.count,
+            })}
           </p>
         )}
       </Tabs.Root>
