@@ -1,12 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
-import { mutate, query } from "@/lib/request";
+import { PaginatedResponse, mutate, query } from "@/lib/request";
 
-import { NotificationFilters } from "@/types/notification";
+import { InAppNotification, NotificationFilters } from "@/types/notification";
 
 import notificationRoutes from "./routes";
 
 export const NOTIFICATIONS_QUERY_KEY = "in_app_notifications";
+
+const NOTIFICATIONS_PAGE_SIZE = 36;
 
 function getPollInterval(): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +25,9 @@ function getPollInterval(): number {
   );
 }
 
-export function useNotifications(filters: NotificationFilters = {}) {
+function buildQueryParams(
+  filters: NotificationFilters,
+): Record<string, string | number | boolean | undefined> {
   const queryParams: Record<string, string | number | boolean | undefined> = {
     ordering: filters.ordering ?? "-created_date",
   };
@@ -28,12 +37,42 @@ export function useNotifications(filters: NotificationFilters = {}) {
   if (filters.resource_id) queryParams.resource_id = filters.resource_id;
   if (filters.facility) queryParams.facility = filters.facility;
   if (filters.unread !== undefined) queryParams.unread = filters.unread;
+
+  return queryParams;
+}
+
+export function useNotifications(filters: NotificationFilters = {}) {
+  const queryParams = buildQueryParams(filters);
   if (filters.limit) queryParams.limit = filters.limit;
   if (filters.offset) queryParams.offset = filters.offset;
 
   return useQuery({
     queryKey: [NOTIFICATIONS_QUERY_KEY, queryParams],
     queryFn: query(notificationRoutes.listNotifications, { queryParams }),
+    refetchInterval: getPollInterval(),
+  });
+}
+
+export function useInfiniteNotifications(filters: NotificationFilters = {}) {
+  const baseQueryParams = buildQueryParams(filters);
+
+  return useInfiniteQuery<PaginatedResponse<InAppNotification>>({
+    queryKey: [NOTIFICATIONS_QUERY_KEY, "infinite", baseQueryParams],
+    queryFn: async ({ pageParam = 0, signal }) => {
+      const response = await query(notificationRoutes.listNotifications, {
+        queryParams: {
+          ...baseQueryParams,
+          limit: NOTIFICATIONS_PAGE_SIZE,
+          offset: pageParam as number,
+        },
+      })({ signal });
+      return response as PaginatedResponse<InAppNotification>;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const currentOffset = allPages.length * NOTIFICATIONS_PAGE_SIZE;
+      return currentOffset < lastPage.count ? currentOffset : null;
+    },
     refetchInterval: getPollInterval(),
   });
 }
