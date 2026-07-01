@@ -2,7 +2,8 @@ import * as Select from "@radix-ui/react-select";
 import * as Tabs from "@radix-ui/react-tabs";
 import { Bell, CheckCheck, Filter, Loader2 } from "lucide-react";
 import { usePath } from "raviger";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 import { cn } from "@/lib/utils";
 
@@ -11,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 
 import {
+  useInfiniteNotifications,
   useMarkRead,
   useMarkUnread,
-  useNotifications,
   useUnreadCount,
 } from "@/api/useNotifications";
 import { EventType, ResourceType } from "@/types/notification";
@@ -47,6 +48,7 @@ export default function NotificationsPage() {
   const [eventType, setEventType] = useState("");
   const [resourceType, setResourceType] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const { ref, inView } = useInView();
 
   // Extract facilityId from URL: /facility/:facilityId/notifications
   const path = usePath();
@@ -58,15 +60,22 @@ export default function NotificationsPage() {
     ...(eventType ? { event_type: eventType } : {}),
     ...(resourceType ? { resource_type: resourceType } : {}),
     ...(facilityId ? { facility: facilityId } : {}),
-    limit: 50,
   };
 
-  const { data, isLoading } = useNotifications(filters);
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useInfiniteNotifications(filters);
   const { data: unreadCount = 0 } = useUnreadCount();
   const markRead = useMarkRead();
   const markUnread = useMarkUnread();
 
-  const notifications = data?.results ?? [];
+  const notifications = data?.pages.flatMap((page) => page.results) ?? [];
+  const totalCount = data?.pages[0]?.count ?? 0;
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleMarkRead = (id: string) => markRead.mutate({ ids: [id] });
   const handleMarkUnread = (id: string) => markUnread.mutate({ ids: [id] });
@@ -231,9 +240,19 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        {data && data.count > notifications.length && (
+        {hasNextPage && (
+          <div ref={ref} className="flex items-center justify-center py-4">
+            {isFetchingNextPage ? (
+              <Loader2 className="size-5 animate-spin text-gray-400" />
+            ) : (
+              <span className="text-xs text-gray-400">Scroll for more</span>
+            )}
+          </div>
+        )}
+
+        {!hasNextPage && notifications.length > 0 && (
           <p className="mt-3 text-center text-xs text-gray-400">
-            Showing {notifications.length} of {data.count} notifications
+            Showing all {totalCount} notifications
           </p>
         )}
       </Tabs.Root>
