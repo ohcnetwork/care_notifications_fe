@@ -48,7 +48,10 @@ export function useNotifications(filters: NotificationFilters = {}) {
 
   return useQuery({
     queryKey: [NOTIFICATIONS_QUERY_KEY, queryParams],
-    queryFn: query(notificationRoutes.listNotifications, { queryParams }),
+    queryFn: query(notificationRoutes.listNotifications, {
+      queryParams,
+      silent: true,
+    }),
     refetchInterval: getPollInterval(),
   });
 }
@@ -65,6 +68,7 @@ export function useInfiniteNotifications(filters: NotificationFilters = {}) {
           limit: NOTIFICATIONS_PAGE_SIZE,
           offset: pageParam as number,
         },
+        silent: true,
       })({ signal });
       return response as PaginatedResponse<InAppNotification>;
     },
@@ -82,6 +86,7 @@ export function useUnreadCount() {
     queryKey: [NOTIFICATIONS_QUERY_KEY, "unread_count"],
     queryFn: query(notificationRoutes.listNotifications, {
       queryParams: { unread: true, limit: 1 },
+      silent: true,
     }),
     refetchInterval: getPollInterval(),
     select: (data: { count: number }) => data.count,
