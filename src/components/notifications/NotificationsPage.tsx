@@ -73,7 +73,7 @@ export default function NotificationsPage() {
 
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useInfiniteNotifications(filters);
-  const { data: unreadCount = 0 } = useUnreadCount();
+  const { data: unreadCount = 0 } = useUnreadCount(facilityId);
   const markRead = useMarkRead();
   const markUnread = useMarkUnread();
 
@@ -94,11 +94,11 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Bell className="size-6 text-gray-700 dark:text-gray-300" />
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+    <div className="mx-auto max-w-4xl px-2 py-4 sm:px-4 sm:py-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Bell className="size-5 text-gray-700 sm:size-6 dark:text-gray-300" />
+          <h1 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">
             {t("notifications")}
           </h1>
           {unreadCount > 0 && (
@@ -107,26 +107,26 @@ export default function NotificationsPage() {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-1 size-4" />
-            {t("filters")}
+            <span className="hidden sm:inline">{t("filters")}</span>
           </Button>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
               <CheckCheck className="mr-1 size-4" />
-              {t("mark_all_read")}
+              <span className="hidden sm:inline">{t("mark_all_read")}</span>
             </Button>
           )}
         </div>
       </div>
 
       {showFilters && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900">
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 sm:gap-3 sm:p-3 dark:border-gray-800 dark:bg-gray-900">
           <Select.Root value={eventType} onValueChange={setEventType}>
             <Select.Trigger className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-800">
               <Select.Value placeholder={t("all_events")} />
@@ -187,11 +187,11 @@ export default function NotificationsPage() {
         value={tab}
         onValueChange={(v) => setTab(v as "all" | "unread" | "read")}
       >
-        <Tabs.List className="mb-4 flex border-b border-gray-200 dark:border-gray-800">
+        <Tabs.List className="mb-4 flex overflow-x-auto border-b border-gray-200 dark:border-gray-800">
           <Tabs.Trigger
             value="all"
             className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors sm:px-4",
               tab === "all"
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500 hover:text-gray-700",
@@ -202,7 +202,7 @@ export default function NotificationsPage() {
           <Tabs.Trigger
             value="unread"
             className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors sm:px-4",
               tab === "unread"
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500 hover:text-gray-700",
@@ -213,7 +213,7 @@ export default function NotificationsPage() {
           <Tabs.Trigger
             value="read"
             className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors",
+              "whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors sm:px-4",
               tab === "read"
                 ? "border-b-2 border-blue-600 text-blue-600"
                 : "text-gray-500 hover:text-gray-700",

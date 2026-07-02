@@ -94,7 +94,7 @@ export function NotificationItem({
     <div
       onClick={handleClick}
       className={cn(
-        "flex items-start gap-3 border-b border-gray-100 p-3 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900",
+        "flex items-start gap-2 border-b border-gray-100 p-2 transition-colors hover:bg-gray-50 sm:gap-3 sm:p-3 dark:border-gray-800 dark:hover:bg-gray-900",
         isUnread && "bg-blue-50/50 dark:bg-blue-950/20",
         deepLink && "cursor-pointer",
       )}
@@ -106,7 +106,7 @@ export function NotificationItem({
         <div className="flex items-start justify-between gap-2">
           <p
             className={cn(
-              "text-sm leading-tight",
+              "line-clamp-2 text-sm leading-tight",
               isUnread
                 ? "font-semibold text-gray-900 dark:text-gray-100"
                 : "text-gray-700 dark:text-gray-300",
@@ -142,7 +142,7 @@ export function NotificationItem({
             onMarkUnread?.(notification.id);
           }
         }}
-        className="shrink-0 rounded p-1 text-xs text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+        className="shrink-0 whitespace-nowrap rounded p-1 text-xs text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
         title={isUnread ? t("mark_as_read") : t("mark_as_unread")}
       >
         {isUnread ? t("mark_read") : t("mark_unread")}

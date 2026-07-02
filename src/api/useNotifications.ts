@@ -81,11 +81,17 @@ export function useInfiniteNotifications(filters: NotificationFilters = {}) {
   });
 }
 
-export function useUnreadCount() {
+export function useUnreadCount(facilityId?: string) {
+  const queryParams: Record<string, string | number | boolean> = {
+    unread: true,
+    limit: 1,
+  };
+  if (facilityId) queryParams.facility = facilityId;
+
   return useQuery({
-    queryKey: [NOTIFICATIONS_QUERY_KEY, "unread_count"],
+    queryKey: [NOTIFICATIONS_QUERY_KEY, "unread_count", facilityId ?? "all"],
     queryFn: query(notificationRoutes.listNotifications, {
-      queryParams: { unread: true, limit: 1 },
+      queryParams,
       silent: true,
     }),
     refetchInterval: getPollInterval(),
