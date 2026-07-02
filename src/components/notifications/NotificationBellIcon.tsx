@@ -11,14 +11,11 @@ export default function NotificationBellIcon() {
   const hasUnread = unreadCount > 0;
 
   return (
-    <span className="relative inline-flex">
-      <Bell className="h-3.5 w-4" />
+    <span className="care-notifications-fe-container relative inline-flex">
+      <Bell className={`h-3.5 w-4 ${hasUnread ? "animate-bell-shake" : ""}`} />
       {hasUnread && (
-        <span
-          aria-label={`${unreadCount} unread notifications`}
-          className="absolute -right-0.5 -top-0.5 inline-flex size-2"
-        >
-          <span className="absolute inline-flex size-full animate-pulse rounded-full bg-red-500" />
+        <span aria-label={`${unreadCount} unread notifications`}>
+          <span className="absolute inline-flex size-1.5 right-0.5 -top-0.5 animate-bell-pulse rounded-full bg-red-500" />
         </span>
       )}
     </span>

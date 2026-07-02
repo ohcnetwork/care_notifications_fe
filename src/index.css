@@ -21,3 +21,36 @@
     border-color: var(--color-gray-200, currentColor);
   }
 }
+
+@keyframes bell-shake {
+  0% { transform: rotate(0); }
+  3% { transform: rotate(10deg); }
+  6% { transform: rotate(-10deg); }
+  9% { transform: rotate(8deg); }
+  12% { transform: rotate(-8deg); }
+  15% { transform: rotate(4deg); }
+  18% { transform: rotate(-4deg); }
+  21% { transform: rotate(2deg); }
+  100% { transform: rotate(0); }
+}
+
+.animate-bell-shake {
+  animation: bell-shake 5s ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes bell-pulse {
+  0% { opacity: 1; }
+  21% { opacity: 1; }
+  30% { opacity: 0.4; }
+  40% { opacity: 1; }
+  50% { opacity: 0.4; }
+  60% { opacity: 1; }
+  70% { opacity: 0.4; }
+  80% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.animate-bell-pulse {
+  animation: bell-pulse 5s ease-in-out infinite;
+}
