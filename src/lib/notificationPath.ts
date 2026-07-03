@@ -21,15 +21,13 @@ export function notificationPath(
 
   switch (resource_type) {
     case "encounter":
-      return payload.patient_id && resource_id
+      return payload.patient_id
         ? `/facility/${facility_id}/patient/${payload.patient_id}/encounter/${resource_id}/updates`
         : null;
     case "service_request":
-      return resource_id
-        ? `/facility/${facility_id}/service_requests/${resource_id}`
-        : null;
+      return `/facility/${facility_id}/service_requests/${resource_id}`;
     case "diagnostic_report":
-      return payload.patient_id && resource_id
+      return payload.patient_id
         ? `/facility/${facility_id}/patient/${payload.patient_id}/diagnostic_reports/${resource_id}`
         : null;
     case "medication_stock":
