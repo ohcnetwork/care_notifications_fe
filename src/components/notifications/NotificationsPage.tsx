@@ -5,6 +5,7 @@ import { usePath } from "raviger";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
+import { consumeNotificationClickHash } from "@/lib/notificationClickListener";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,14 @@ export default function NotificationsPage() {
   const [resourceType, setResourceType] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const { ref, inView } = useInView();
+
+  // If this page was reached as the SW's fallback URL with pending
+  // notification click data in the hash, resolve and redirect to the
+  // deep-link (the manifest-load listener may have run before the hash
+  // was applied).
+  useEffect(() => {
+    consumeNotificationClickHash();
+  }, []);
 
   const EVENT_TYPE_OPTIONS = [
     { value: "", label: t("all_events") },
