@@ -1,19 +1,19 @@
 import { notificationPath } from "./notificationPath";
 
 /**
- * Reads notification click data from the URL hash (set by care_fe's SW)
- * and navigates to the resolved deep-link path.
+ * Reads notification click data from the URL hash (set by care_fe's SW),
+ * clears the hash, and navigates to the resolved deep-link path.
  *
  * The SW navigates to /facility/{id}/notifications#notification_click={encoded_data}
- * This function picks it up, resolves the deep-link, and redirects.
+ * Returns true if a redirect was performed.
  */
-export function initNotificationClickListener() {
+export function consumeNotificationClickHash(): boolean {
   const hash = window.location.hash;
-  if (!hash.includes("notification_click=")) return;
+  if (!hash.includes("notification_click=")) return false;
 
   try {
     const encoded = hash.split("notification_click=")[1];
-    if (!encoded) return;
+    if (!encoded) return false;
 
     const data = JSON.parse(decodeURIComponent(encoded));
 
@@ -33,8 +33,21 @@ export function initNotificationClickListener() {
 
     if (path) {
       window.location.replace(path);
+      return true;
     }
   } catch {
     // silently ignore malformed notification data
   }
+  return false;
+}
+
+/**
+ * Consumes any notification click data already present in the URL and keeps
+ * listening for hash changes. The SW's client.navigate() may only change the
+ * hash when the app is already open (no full reload), so a one-time check at
+ * module load is not enough.
+ */
+export function initNotificationClickListener() {
+  consumeNotificationClickHash();
+  window.addEventListener("hashchange", () => consumeNotificationClickHash());
 }
