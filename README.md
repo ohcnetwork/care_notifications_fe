@@ -79,3 +79,14 @@ This plugin uses [Module Federation](https://github.com/nicedoc/vite-plugin-fede
 - **Nav Items** — Notification bell icon in the sidebar and user menu
 
 To connect the plugin to Care, add the plugin's remote entry URL to the Care frontend configuration.
+
+## Enabling Push Notifications
+
+To enable browser push notifications for your device:
+
+1. Click your **user/profile icon** in the sidebar
+2. Select **Notifications** from the menu
+3. Click the **Enable** button
+4. Allow the browser permission prompt when asked
+
+Once registered, you will receive push notifications even when the app is not actively open in your browser.
