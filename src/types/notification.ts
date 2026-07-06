@@ -27,10 +27,11 @@ export interface NotificationRecipient {
 
 export interface InAppNotification {
   id: string;
-  event_type: EventType;
-  resource_type: ResourceType;
+  /** Opaque strings — plugins may define their own types (see notificationRegistry). */
+  event_type: string;
+  resource_type: string;
   resource_id: string;
-  facility_id: string;
+  facility_id: string | null;
   title: string;
   body: string;
   payload: Record<string, string>;

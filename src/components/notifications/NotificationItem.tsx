@@ -1,71 +1,30 @@
-import {
-  Bell,
-  CalendarCheck,
-  CalendarX,
-  ClipboardList,
-  FlaskConical,
-  Hospital,
-  PackageOpen,
-  Timer,
-} from "lucide-react";
+import { Bell } from "lucide-react";
 import { navigate } from "raviger";
 
 import { formatDistanceToNow } from "@/lib/dateUtils";
-import { notificationPath } from "@/lib/notificationPath";
+import {
+  getNotificationHandler,
+  resolveNotificationIcon,
+  resolveNotificationLabel,
+  resolveNotificationPath,
+  runNotificationClickAction,
+} from "@/lib/notificationRegistry";
 import { cn } from "@/lib/utils";
 
 import { useTranslation } from "@/hooks/useTranslation";
 
-import {
-  EventType,
-  InAppNotification,
-  ResourceType,
-} from "@/types/notification";
+import { InAppNotification } from "@/types/notification";
 
 export function getNotificationIcon(notification: InAppNotification) {
-  const iconMap: Record<string, React.ReactNode> = {
-    [EventType.SERVICE_REQUEST_RAISED]: (
-      <ClipboardList className="size-4 text-blue-600" />
-    ),
-    [EventType.DIAGNOSTIC_REPORT_READY]: (
-      <FlaskConical className="size-4 text-green-600" />
-    ),
-    [EventType.ENCOUNTER_IP_CREATED]: (
-      <Hospital className="size-4 text-purple-600" />
-    ),
-    [EventType.MEDICATION_STOCK_LOW]: (
-      <PackageOpen className="size-4 text-red-600" />
-    ),
-    [EventType.MEDICATION_STOCK_NEAR_EXPIRY]: (
-      <Timer className="size-4 text-orange-600" />
-    ),
-    [EventType.BOOKING_CONFIRMATION]: (
-      <CalendarCheck className="size-4 text-green-600" />
-    ),
-    [EventType.BOOKING_CANCELLATION]: (
-      <CalendarX className="size-4 text-red-600" />
-    ),
-    [EventType.BOOKING_RESCHEDULE]: (
-      <CalendarCheck className="size-4 text-yellow-600" />
-    ),
-    [EventType.BOOKING_REMINDER]: <Bell className="size-4 text-blue-600" />,
-  };
   return (
-    iconMap[notification.event_type] ?? (
+    resolveNotificationIcon(notification) ?? (
       <Bell className="size-4 text-gray-500" />
     )
   );
 }
 
 export function getResourceLabel(resourceType: string) {
-  const labels: Record<string, string> = {
-    [ResourceType.SERVICE_REQUEST]: "service_request",
-    [ResourceType.DIAGNOSTIC_REPORT]: "diagnostic_report",
-    [ResourceType.ENCOUNTER]: "encounter",
-    [ResourceType.MEDICATION_STOCK]: "medication_stock",
-    [ResourceType.BOOKING]: "booking",
-  };
-  return labels[resourceType] ?? resourceType;
+  return resolveNotificationLabel(resourceType);
 }
 
 interface NotificationItemProps {
@@ -81,13 +40,15 @@ export function NotificationItem({
 }: NotificationItemProps) {
   const { t } = useTranslation();
   const isUnread = !notification.read_at;
-  const deepLink = notificationPath(notification);
+  const deepLink = resolveNotificationPath(notification);
+  const hasClickAction = !!getNotificationHandler(notification.resource_type)
+    ?.onClick;
 
   const handleClick = () => {
-    if (deepLink) {
-      if (isUnread) onMarkRead?.(notification.id);
-      navigate(deepLink);
-    }
+    const handledByAction = runNotificationClickAction(notification);
+    if (!handledByAction && !deepLink) return;
+    if (isUnread) onMarkRead?.(notification.id);
+    if (!handledByAction && deepLink) navigate(deepLink);
   };
 
   return (
@@ -96,7 +57,7 @@ export function NotificationItem({
       className={cn(
         "flex items-start gap-2 border-b border-gray-100 p-2 transition-colors hover:bg-gray-50 sm:gap-3 sm:p-3 dark:border-gray-800 dark:hover:bg-gray-900",
         isUnread && "bg-blue-50/50 dark:bg-blue-950/20",
-        deepLink && "cursor-pointer",
+        (deepLink || hasClickAction) && "cursor-pointer",
       )}
     >
       <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">

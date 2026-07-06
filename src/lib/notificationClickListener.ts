@@ -1,19 +1,35 @@
-import { notificationPath } from "./notificationPath";
+import {
+  resolveNotificationPath,
+  runNotificationClickAction,
+  waitForNotificationHandler,
+} from "./notificationRegistry";
 
 interface NotificationClickData {
   resource_type?: string;
   resource_id?: string;
   facility_id?: string;
+  event_type?: string;
   payload?: Record<string, unknown>;
 }
 
-function resolveAndNavigate(data: NotificationClickData) {
-  const path = notificationPath({
+async function resolveAndNavigate(data: NotificationClickData) {
+  // Plugins load in parallel; wait briefly for the owning handler to register
+  if (data.resource_type) {
+    await waitForNotificationHandler(data.resource_type);
+  }
+
+  const target = {
     resource_type: data.resource_type || "",
     resource_id: data.resource_id || "",
-    facility_id: data.facility_id || "",
+    facility_id: data.facility_id,
+    event_type: data.event_type,
     payload: (data.payload as Record<string, string>) || {},
-  });
+  };
+
+  // Non-URL actions (e.g. answering an in-app call) take priority
+  if (runNotificationClickAction(target)) return;
+
+  const path = resolveNotificationPath(target);
 
   const fallback = data.facility_id
     ? `/facility/${data.facility_id}/notifications`

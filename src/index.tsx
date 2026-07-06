@@ -2,6 +2,11 @@ import "./index.css";
 
 export { default as manifest } from "./manifest";
 export { default as routes } from "./routes";
+export {
+  registerNotificationHandlers,
+  type NotificationHandler,
+  type NotificationTarget,
+} from "./lib/notificationRegistry";
 
 declare global {
   interface Window {
