@@ -1,4 +1,5 @@
 import { Bell } from "lucide-react";
+import { usePath } from "raviger";
 
 import { useUnreadCount } from "@/api/useNotifications";
 
@@ -7,7 +8,10 @@ import { useUnreadCount } from "@/api/useNotifications";
  * whenever there are unread notifications.
  */
 export default function NotificationBellIcon() {
-  const { data: unreadCount = 0 } = useUnreadCount();
+  const path = usePath();
+  const facilityId = path?.match(/\/facility\/([^/]+)/)?.[1];
+
+  const { data: unreadCount = 0 } = useUnreadCount(facilityId);
   const hasUnread = unreadCount > 0;
 
   return (

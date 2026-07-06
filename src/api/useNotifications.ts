@@ -94,6 +94,7 @@ export function useUnreadCount(facilityId?: string) {
       queryParams,
       silent: true,
     }),
+    enabled: !!facilityId,
     refetchInterval: getPollInterval(),
     select: (data: { count: number }) => data.count,
   });
