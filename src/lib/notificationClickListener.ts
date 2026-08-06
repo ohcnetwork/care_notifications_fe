@@ -12,9 +12,7 @@ interface NotificationClickData {
   payload?: Record<string, unknown>;
 }
 
-// care_fe/src/service-worker.ts — used to hand off notification click
-// payloads via Cache Storage instead of the URL, so PHI never ends up in the
-// browser history.
+// Keep in sync with the identical constants in care_fe/src/service-worker.ts.
 const NOTIFICATION_CLICK_CACHE = "care-notification-click-data-v1";
 const notificationClickCacheKey = (id: string) =>
   `/__notification_click__/${id}`;
@@ -57,24 +55,18 @@ async function resolveAndNavigate(data: NotificationClickData) {
 }
 
 /**
- * Handles notification click deep-linking, covering both cases:
- *
- * 1. App already open: care_fe's SW focuses the tab and posts a
- *    NOTIFICATION_CLICK message, which the listener below resolves.
- * 2. App closed: the SW opens /facility/{id}/notifications#notification_click={id},
- *    where {id} is an opaque key into Cache Storage (not the payload itself,
- *    so PHI never ends up in the URL or browser history). The id is read
- *    once at plugin load, the payload fetched from the cache, and the app
- *    redirected.
+ * Handles notification click deep-linking. care_fe's SW navigates to
+ * `{path}#notification_click={id}`, an opaque key into Cache Storage, for
+ * both existing and new windows. Read on load and on `hashchange`, since a
+ * same-document (hash-only) navigation doesn't rerun this module.
  */
 export async function initNotificationClickListener() {
-  // Case 1: live message from the SW while the app is open
-  navigator.serviceWorker?.addEventListener("message", (event) => {
-    if (event.data?.type !== "NOTIFICATION_CLICK") return;
-    resolveAndNavigate(event.data.data || {});
-  });
+  const handleHash = () => void handleNotificationClickHash();
+  window.addEventListener("hashchange", handleHash);
+  await handleNotificationClickHash();
+}
 
-  // Case 2: opaque id set by the SW on a fresh window
+async function handleNotificationClickHash() {
   const hash = window.location.hash;
   if (!hash.includes("notification_click=")) return;
 
