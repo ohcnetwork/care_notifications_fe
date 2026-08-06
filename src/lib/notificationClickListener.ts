@@ -12,6 +12,24 @@ interface NotificationClickData {
   payload?: Record<string, unknown>;
 }
 
+// care_fe/src/service-worker.ts — used to hand off notification click
+// payloads via Cache Storage instead of the URL, so PHI never ends up in the
+// browser history.
+const NOTIFICATION_CLICK_CACHE = "care-notification-click-data-v1";
+const notificationClickCacheKey = (id: string) =>
+  `/__notification_click__/${id}`;
+
+async function consumeNotificationClickData(
+  id: string,
+): Promise<NotificationClickData | null> {
+  const cache = await caches.open(NOTIFICATION_CLICK_CACHE);
+  const key = notificationClickCacheKey(id);
+  const response = await cache.match(key);
+  if (!response) return null;
+  await cache.delete(key);
+  return (await response.json()) as NotificationClickData;
+}
+
 async function resolveAndNavigate(data: NotificationClickData) {
   // Plugins load in parallel; wait briefly for the owning handler to register
   if (data.resource_type) {
@@ -43,35 +61,38 @@ async function resolveAndNavigate(data: NotificationClickData) {
  *
  * 1. App already open: care_fe's SW focuses the tab and posts a
  *    NOTIFICATION_CLICK message, which the listener below resolves.
- * 2. App closed: the SW opens /facility/{id}/notifications#notification_click={data};
- *    the hash is read once at plugin load and redirected.
+ * 2. App closed: the SW opens /facility/{id}/notifications#notification_click={id},
+ *    where {id} is an opaque key into Cache Storage (not the payload itself,
+ *    so PHI never ends up in the URL or browser history). The id is read
+ *    once at plugin load, the payload fetched from the cache, and the app
+ *    redirected.
  */
-export function initNotificationClickListener() {
+export async function initNotificationClickListener() {
   // Case 1: live message from the SW while the app is open
   navigator.serviceWorker?.addEventListener("message", (event) => {
     if (event.data?.type !== "NOTIFICATION_CLICK") return;
     resolveAndNavigate(event.data.data || {});
   });
 
-  // Case 2: hash set by the SW on a fresh window
+  // Case 2: opaque id set by the SW on a fresh window
   const hash = window.location.hash;
   if (!hash.includes("notification_click=")) return;
 
+  const id = hash.split("notification_click=")[1];
+
+  // Clear the hash immediately to avoid re-triggering on refresh
+  history.replaceState(
+    null,
+    "",
+    window.location.pathname + window.location.search,
+  );
+
+  if (!id) return;
+
   try {
-    const encoded = hash.split("notification_click=")[1];
-    if (!encoded) return;
-
-    const data = JSON.parse(decodeURIComponent(encoded));
-
-    // Clear the hash to avoid re-triggering on refresh
-    history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
-
-    resolveAndNavigate(data);
-  } catch {
-    // silently ignore malformed notification data
+    const data = await consumeNotificationClickData(id);
+    if (data) resolveAndNavigate(data);
+  } catch (err) {
+    console.warn("Failed to resolve notification click data", err);
   }
 }
